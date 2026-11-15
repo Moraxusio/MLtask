@@ -1,0 +1,23 @@
+# External data and generated artifacts are not part of the source package.
+work/
+pretrained/
+outputs/
+segmentation/train/
+segmentation/test/
+segmentation/image/
+*.pt
+*.pth
+*.safetensors
+*.npy
+*.npz
+*.csv
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.gif
+*.zip
+*.log
+__pycache__/
+*.pyc

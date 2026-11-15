@@ -1,0 +1,11 @@
+# Required by the four actual-submission workflows; not a historical environment lock.
+# Install mutually compatible torch/torchvision builds for the target CUDA environment.
+torch
+torchvision
+numpy
+pandas
+Pillow
+scikit-learn
+timm
+safetensors
+opencv-python
