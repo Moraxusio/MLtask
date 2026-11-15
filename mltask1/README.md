@@ -4,7 +4,7 @@
 
 ## 与实际提交的对应关系
 
-已只读核对 `/nvme1/fancy/MLTASK/t1.csv` 与 `/nvme1/fancy/mltask1/submission-for-task2.csv`：两者 **11,273 bytes，逐字节一致**，SHA-256 均为：
+已只读核对 `本地项目目录/t1.csv` 与 `数据目录/submission-for-task2.csv`：两者 **11,273 bytes，逐字节一致**，SHA-256 均为：
 
 ```text
 b8b533ac895453ab470f904cdb7a54e045cf936c6a5ac0609ca8fd4078b6aec9
@@ -21,7 +21,7 @@ b8b533ac895453ab470f904cdb7a54e045cf936c6a5ac0609ca8fd4078b6aec9
 数据由使用者自行准备，不复制进源码包。当前机器的只读数据根目录是：
 
 ```text
-/nvme1/fancy/mltask1/dataset-for-task2/dataset-for-task2/
+数据目录/dataset-for-task2/dataset-for-task2/
   train/
     Black-grass/*.png
     Common wheat/*.png
@@ -40,9 +40,9 @@ b8b533ac895453ab470f904cdb7a54e045cf936c6a5ac0609ca8fd4078b6aec9
 下面命令使用当前机器原项目的只读数据，输出写入源码包任务目录，不覆盖原项目。其他机器请替换 `cd` 和 `--data-root` 的绝对路径；所有相对输出路径相对于工作目录。运行会真正训练并推理，且覆盖同名输出文件。
 
 ```bash
-cd /nvme1/fancy/MLTASK/github_code/mltask1
+cd 本地项目目录/github_code/mltask1
 python3 solution.py \
-  --data-root /nvme1/fancy/mltask1/dataset-for-task2/dataset-for-task2 \
+  --data-root 数据目录/dataset-for-task2/dataset-for-task2 \
   --arch convnext_tiny \
   --img-size 384 \
   --epochs 30 \
@@ -65,10 +65,10 @@ python3 solution.py \
 
 **没有 `--tta` / `--tta4` 参数。** 程序分别计算 `none` 与 `tta4` 的 OOF accuracy，再自动选择较高者（同分时按当前顺序选 `none`）。原日志是 `none=0.9280`、`tta4=0.9300`，因此选中 `tta4`。四视图为原图、水平翻转、垂直翻转、180°旋转；先平均视图 softmax 概率，再平均五折概率。重新训练可能选出不同方案；为保持原算法，未新增强制 TTA 开关。
 
-预期生成文件（本次未生成、不得随源码打包）：
+预期生成文件（运行时生成，不纳入源码仓库）：
 
-- `/nvme1/fancy/MLTASK/github_code/mltask1/submission-for-task2.csv`：378 条预测，表头 `ID,Category`。
-- `/nvme1/fancy/MLTASK/github_code/mltask1/cv_report.json`：本次参数、OOF 分数、选中 TTA、混淆矩阵及类别。
+- `本地项目目录/github_code/mltask1/submission-for-task2.csv`：378 条预测，表头 `ID,Category`。
+- `本地项目目录/github_code/mltask1/cv_report.json`：本次参数、OOF 分数、选中 TTA、混淆矩阵及类别。
 - 训练摘要只打印到标准输出；此命令不生成日志文件。每折预测后释放模型，不保存 checkpoint 或逐样本概率。不会自动生成名为 `t1.csv` 的文件；如需此名称，可将 `--out` 改为 `t1.csv`，但新预测不能冒充已经核验的原提交。
 
 ## 复现边界
@@ -76,4 +76,4 @@ python3 solution.py \
 - 原项目未保存最终模型权重及 OOF/test 概率，无法不重训而独立重算当前提交；CSV 只含最终标签，不能还原模型和概率。源码没有独立加载最终权重进行推理的模式。
 - 未记录完整历史命令、依赖锁定或硬件环境；固定 seed 不保证跨环境数值或输出字节相同。删除未用分支后仍保留实际路径的算法与默认值。标签平滑注释已纠正：5 类、ε=0.1 时真类为 0.92，其余各 0.02。
 - 0.9300 是开发过程中的 OOF accuracy，不是无标签测试集准确率。EMA/Mixup/TTA 的选择使用了 OOF，仍有选择偏差。
-- 此前提交对应核验包括文件字节、源码 AST、依赖及 CLI；本次分支精简另做逐函数 AST、隔离 argparse、符号/调用签名及合成标量公式检查，见 `../../quality/actual_branch_scope.md`。未导入训练依赖、未运行项目入口、未训练/推理、未下载权重。
+- 此前提交对应核验包括文件字节、源码 AST、依赖及 CLI；本次分支精简另做逐函数 AST、隔离 argparse、符号/调用签名及合成标量公式检查，见 代码版本说明。未导入训练依赖、未运行项目入口、未训练/推理、未下载权重。

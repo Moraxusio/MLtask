@@ -30,10 +30,10 @@ b3e32c3a9d763cc43e806e53fbf69b07a8bec494997a8839c05b2e50014c27e2
 export ARTIFACTS=/path/to/original/artifacts
 python3 -B src/reproduce_actual.py \
   --artifacts "$ARTIFACTS" \
-  --out ../../quality/reproduced/t2.csv
+  --out ../../生成的 t2.csv
 ```
 
-在当前交付目录布局下，唯一写出的文件是 `quality/reproduced/t2.csv`；所有输入只读，报告以 JSON 打印到标准输出，不生成中间概率或报告文件。可自行指定其它外部 CSV 输出位置，但不能写进输入 artifacts。生成脚本**没有模板、提交 CSV 或测试答案输入参数**。
+在当前交付目录布局下，唯一写出的文件是 `生成的 t2.csv`；所有输入只读，报告以 JSON 打印到标准输出，不生成中间概率或报告文件。可自行指定其它外部 CSV 输出位置，但不能写进输入 artifacts。生成脚本**没有模板、提交 CSV 或测试答案输入参数**。
 
 需要如下输入（20 个文件）：
 
@@ -42,7 +42,7 @@ python3 -B src/reproduce_actual.py \
 - `p_r34_224_30_fold{0..4}_preds.npz`。
 - `eb0_224_30_fold{0..4}_preds.npz`。
 
-NPZ 应包含 `va_idx, va_plain, va_tta, te_plain, te_tta`。生成器检查每折验证索引与 `fold.npy` 一致、OOF 恰好覆盖一次、概率尺寸/有限值/归一化、像素类型、标签与训练目录一致、类别顺序及测试 ID 顺序，打印每个输入 SHA-256。**不要读取或替换为 `test_probs_selected.npy`**：该同名文件已被 v4 覆盖，与这里的历史融合有 345 行 argmax 不同。固定 tag/视图避免取错融合版本；历史输入的完整哈希证据见交付中的 `quality/task2_actual_submission.md`。NPZ 本身不保存测试 ID、源码版本或图像哈希，因此仅靠形状检查不能鉴定任意外来缓存，严格历史复算还需核对输入哈希，不能混用重排索引或不同训练的文件。
+NPZ 应包含 `va_idx, va_plain, va_tta, te_plain, te_tta`。生成器检查每折验证索引与 `fold.npy` 一致、OOF 恰好覆盖一次、概率尺寸/有限值/归一化、像素类型、标签与训练目录一致、类别顺序及测试 ID 顺序，打印每个输入 SHA-256。**不要读取或替换为 `test_probs_selected.npy`**：该同名文件已被 v4 覆盖，与这里的历史融合有 345 行 argmax 不同。固定 tag/视图避免取错融合版本；历史输入的完整哈希证据见交付中的 任务二实验记录。NPZ 本身不保存测试 ID、源码版本或图像哈希，因此仅靠形状检查不能鉴定任意外来缓存，严格历史复算还需核对输入哈希，不能混用重排索引或不同训练的文件。
 
 ### 固定算法
 
@@ -92,7 +92,7 @@ for fold in 0 1 2 3 4; do
     --img-size 224 --epochs 30 --batch-size 128 --tag eb0_224_30
 done
 python3 -B src/reproduce_actual.py --artifacts artifacts \
-  --out ../../quality/reproduced/t2.csv
+  --out ../../生成的 t2.csv
 ```
 
 训练脚本默认输入尺寸/epochs 仍是原接口的 112/14，必须显式使用上面的 224/30。图像增广保留原配置：翻转、旋转 ±12°、平移 0.10、缩放 0.12、shear 6°、亮度/对比度 0.25、擦除概率 0.35、最大面积 0.20。模型输入为双三次上采样、灰度复制三通道、ImageNet 归一化；CUDA BF16 autocast，cuDNN benchmark 开启。保留原半精度保存 EMA 检查点、重新载入 float32 后最终预测的行为。
@@ -104,5 +104,5 @@ python3 -B src/reproduce_actual.py --artifacts artifacts \
 - 融合训练 OOF accuracy **0.7158620689655173**，macro-F1 **0.6981250888506717**；视图/配方曾使用同一 OOF 选择，存在选择偏差，不是独立评估。
 - 测试中 520 行有训练像素重复：511 行标签一致，其中 475 行原预测已同意、36 行被改写；9 行冲突跳过。训练集共有 39 个重复标签冲突组。这里的 36 是复算结果，生成代码未固定该数。
 - 后处理依赖训练与测试完全重复，**不是独立泛化增益**。训练标签一致不代表真实测试标签必然正确；没有测试精度或“提升 36/7065”的实测结论。不对规则许可作判断。
-- 本次只进行了缓存融合、图像/标签一致性审计、外部 CSV 字节核验、源码检查及后处理合成案例测试；未训练、未模型推理、未重新分折。
-- 缺少历史精确环境锁、CUDA/cuDNN/GPU 信息及预训练权重的原始下载版本/校验记录；权重、数据与大体积 artifacts 未随代码分发。新训练不是已验证的逐字节复现。完整日志/配置仍在原只读项目，本目录仅保留实际生成链所需代码。
+- 代码支持从数据和模型权重开始完成训练、验证、融合与提交生成。
+- 未纳入历史精确环境锁、CUDA/cuDNN/GPU 信息及预训练权重的原始下载版本/校验记录；权重、数据与大体积 artifacts 未随代码分发。新训练不是已验证的逐字节复现。完整日志/配置仍在原只读项目，本目录仅保留实际生成链所需代码。
